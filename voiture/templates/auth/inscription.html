@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Veyra</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-lg max-w-sm">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- En-tête -->
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 text-white rounded-2xl mb-6 shadow-lg">
+                    <i class="fas fa-car text-3xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Rejoignez Veyra</h1>
+                <p class="text-lg text-gray-600">Créez votre compte en quelques minutes</p>
+            </div>
+
+            <!-- Formulaire principal -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-10">
+                <form method="POST" action="{% url 'inscription' %}" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Informations personnelles -->
+                    <div class="space-y-6">
+                        <div class="border-l-4 border-indigo-500 pl-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations personnelles</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">Nom de famille</label>
+                                <input type="text" name="nom" class="input input-bordered w-full focus:border-indigo-500" placeholder="Nom de famille" required>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">Prénom</label>
+                                <input type="text" name="prenom" class="input input-bordered w-full focus:border-indigo-500" placeholder="Prénom" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coordonnées -->
+                    <div class="space-y-6">
+                        <div class="border-l-4 border-green-500 pl-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Coordonnées</h3>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">Adresse email</label>
+                            <div class="relative">
+                                <input type="email" name="email" class="input input-bordered w-full pl-10 focus:border-indigo-500" placeholder="marie.dupont@email.com" required>
+                                <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">Numéro de téléphone</label>
+                            <div class="relative">
+                                <input type="tel" name="telephone" class="input input-bordered w-full pl-10 focus:border-indigo-500" placeholder="80 80 80 80" required>
+                                <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700">Adresse complète</label>
+                            <div class="relative">
+                                <textarea name="adresse" class="textarea textarea-bordered w-full pl-10 pt-4 h-24 focus:border-indigo-500" placeholder="123 Rue de la République, Niamey, Niger" required></textarea>
+                                <i class="fas fa-map-marker-alt absolute left-3 top-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sécurité -->
+                    <div class="space-y-6">
+                        <div class="border-l-4 border-red-500 pl-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Sécurité du compte</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">Mot de passe</label>
+                                <div class="relative">
+                                    <input type="password" name="password" class="input input-bordered w-full pl-10 focus:border-indigo-500" placeholder="••••••••" required>
+                                    <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
+                                <div class="relative">
+                                    <input type="password" name="confirm_password" class="input input-bordered w-full pl-10 focus:border-indigo-500" placeholder="••••••••" required>
+                                    <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conditions -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <label class="flex items-start cursor-pointer">
+                            <input type="checkbox" class="checkbox checkbox-primary mt-1 mr-4" required>
+                            <span class="text-sm text-gray-700 leading-relaxed">
+                                En créant un compte, j'accepte les 
+                                <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium underline">conditions d'utilisation</a> 
+                                et la 
+                                <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium underline">politique de confidentialité</a> 
+                                de Veyra.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Bouton de soumission -->
+                    <button type="submit" class="btn btn-primary w-full btn-lg text-lg font-semibold">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Créer mon compte
+                    </button>
+                </form>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-8 text-center space-y-4">
+                <p class="text-gray-600">
+                    Vous avez déjà un compte ?
+                    <a href="{% url 'connexion' %}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
+                        Se connecter
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-fermeture après 5 secondes
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+
+</html>

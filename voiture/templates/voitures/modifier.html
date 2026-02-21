@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-6">Modification d'une Voiture</h2>
+
+        <form method="POST" action="{% url 'modifier_voitures' voiture.id %}" enctype="multipart/form-data"
+            class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Propriétaire *</span></label>
+                    <select name="proprietaire" class="select select-bordered" required>
+                        <option value="">Sélectionner un propriétaire</option>
+                        {% for u in utilisateurs %}
+                        <option value="{{ u.id }}" {% if voiture.proprietaire.id == u.id %}selected{% endif %}>
+                            {{ u.nom }} {{ u.prenom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Marque *</span></label>
+                    <input type="text" name="marque" class="input input-bordered" value="{{ voiture.marque }}" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Modèle *</span></label>
+                    <input type="text" name="modele" class="input input-bordered" value="{{ voiture.modele }}" required>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Année *</span></label>
+                    <input type="number" name="annee" min="1900" max="2100" class="input input-bordered" value="{{ voiture.annee }}" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Immatriculation *</span></label>
+                    <input type="text" name="immatriculation" class="input input-bordered" value="{{ voiture.immatriculation }}" required>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Prix (FCFA) *</span></label>
+                    <input type="number" step="0.01" name="prix_jour" class="input input-bordered" value="{{ voiture.prix_jour }}" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Nombre de places *</span>
+                    </label>
+                    <input type="number" name="nb_places" value="{{ voiture.nb_places }}" class="input input-bordered" placeholder=" Nombre de places"
+                        required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Description *</span>
+                    </label>
+                    <textarea name="description" class="textarea textarea-bordered h-12" required>
+                        {{ voiture.description }}
+                    </textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">Disponibilité</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" 
+                                name="disponibilite" 
+                                value="True"
+                                class="radio radio-primary" 
+                                {% if voiture.disponibilite %}checked{% endif %}>
+                            <span>Disponible</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" 
+                                name="disponibilite" 
+                                value="False"
+                                class="radio radio-primary" 
+                                {% if not voiture.disponibilite %}checked{% endif %}>
+                            <span>Indisponible</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Transmission *</span>
+                    </label>
+                    <select name="transmission" class="select select-bordered" required>
+                        <option value="">Sélectionner une transmission</option>
+                        <option value="manuelle" {% if voiture.transmission == 'manuelle' %}selected{% endif %}>Manuelle</option>
+                        <option value="automatique" {% if voiture.transmission == 'automatique' %}selected{% endif %}>Automatique</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Couleur *</span></label>
+                    <input type="text" name="couleur" class="input input-bordered" value="{{ voiture.couleur }}" required>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Photo</span></label>
+                    <input type="file" name="photo" class="file-input file-input-bordered" accept="image/*">
+                    {% if voiture.photo %}
+                        <img src="{{ voiture.photo.url }}" class="mt-2 w-32 h-20 object-cover" alt="Photo actuelle">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-actions justify-end space-x-4">
+                <a href="{% url 'liste_voitures' %}" class="btn btn-error">
+                    Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Sauvegarder les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

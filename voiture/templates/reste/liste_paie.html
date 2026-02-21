@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des paiements{% endblock %}
+
+{% block content %}
+
+<div>
+    <div class="text-sm breadcrumbs mb-6">
+        <ul>
+            <li><a href="#dashboard">Accueil</a></li>
+            <li>Gestion des Paiements</li>
+        </ul>
+    </div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h1 class="text-3xl font-bold mb-4 sm:mb-0">Gestion des Paiements</h1>
+
+        <a href="{% url 'ajouter_paiements' %}" class="btn btn-primary">
+            Nouveau paiement
+        </a>
+    </div>
+
+    <div x-show="currentView === 'liste'" x-transition>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <form method="get" class="flex items-center w-full gap-4  md:w-1/2">
+                        <input type="text" name="search" placeholder="Recherches..." value="{{ search }}"
+                            class="input input-bordered w-full" />
+
+                        <select name="statutP" class="select select-bordered">
+                            <option value="" {% if not statutP %}selected{% endif %}>Tous les statuts</option>
+                            <option value="effectue" {% if role == "effectue" %}selected{% endif %}>Effectué</option>
+                            <option value="echoue" {% if role == "echoue" %}selected{% endif %}>Échoué</option>
+                            <option value="rembourse" {% if role == "rembourse" %}selected{% endif %}>Remboursé</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </form>
+
+                </div>
+
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Client</th>
+                                <th>Voiture</th>
+                                <th>Montant (FCFA)</th>
+                                <th>Moyen de Paiement</th>
+                                <th>Date Paiement</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in paiements %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ p.reservation.utilisateur.nom }} {{ p.reservation.utilisateur.prenom }}</td>
+                                <td>{{ p.reservation.voiture.marque }} {{ p.reservation.voiture.modele }}</td>
+                                <td>{{ p.montant }} FCFA</td>
+                                <td>
+                                    {% if p.moyenPaiement == 'Carte' %}
+                                    <span class="badge badge-warning">Carte bancaire</span>
+                                    {% elif p.moyenPaiement == 'PayPal' %}
+                                    <span class="badge badge-success">PayPal</span>
+                                    {% else %}
+                                    <span class="badge badge-error">Mobile Money</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ p.datePaiement|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if p.statutP == 'effectue' %}
+                                    <span class="badge badge-warning">Effectué</span>
+                                    {% elif p.statutP == 'echoue' %}
+                                    <span class="badge badge-success">Échoué</span>
+                                    {% else %}
+                                    <span class="badge badge-error">Remboursé</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <a href="{% url 'modifier_paiements' p.id %}" class="btn btn-sm btn-ghost">
+                                        Modifier
+                                    </a>
+                                    <a href="{% url 'supprimer_paiements' p.id %}"
+                                        class="btn btn-sm btn-ghost text-error">
+                                        Supprimer</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10">Aucun paiement trouvé.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-6">
+                    <div class="btn-group">
+                        {% if paiements.has_previous %}
+                            <a href="?page={{ paiements.previous_page_number }}&q={{ search }}&statutP={{ statutP }}"
+                                class="btn">«</a>
+                        {% endif %}
+
+                        {% for num in paiements.paginator.page_range %}
+                            {% if num == paiements.number %}
+                                <a href="?page={{ num }}&q={{ search }}&statutP={{ statutP }}" class="btn btn-active">{{ num }}</a>
+                            {% else %}
+                                <a href="?page={{ num }}&q={{ search }}&statutP={{ statutP }}" class="btn">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if paiements.has_next %}
+                            <a href="?page={{ paiements.next_page_number }}&q={{ search }}&statutP={{ statutP }}"
+                                class="btn">»</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

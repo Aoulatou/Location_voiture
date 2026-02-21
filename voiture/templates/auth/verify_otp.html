@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification OTP - Veyra</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Card principale -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <!-- Icône -->
+                <div class="mx-auto h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-shield-alt text-3xl text-indigo-600"></i>
+                </div>
+                
+                <!-- Titre -->
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">
+                        Vérification de sécurité
+                    </h2>
+                    <p class="text-sm text-gray-600">
+                        Un code de vérification a été envoyé à <br>
+                        <strong class="text-gray-900">{{ email }}</strong>
+                    </p>
+                </div>
+
+                <!-- Formulaire -->
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="otp_code" class="block text-sm font-medium text-gray-700 mb-2">
+                            Code de vérification (6 chiffres)
+                        </label>
+                        <input 
+                            id="otp_code" 
+                            name="otp_code" 
+                            type="text" 
+                            required 
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            class="input input-bordered w-full text-center text-2xl tracking-widest font-bold"
+                            placeholder="000000"
+                            autofocus
+                        >
+                        <p class="mt-2 text-xs text-gray-500 flex items-center justify-center">
+                            <i class="fas fa-clock mr-1"></i>
+                            Le code expire dans 10 minutes
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-full btn-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Vérifier le code
+                    </button>
+                </form>
+
+                <!-- Actions secondaires -->
+                <div class="mt-6 text-center space-y-3">
+                    <p class="text-sm text-gray-600">
+                        Vous n'avez pas reçu le code ?
+                    </p>
+                    <a href="{% url 'resend_otp' %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-redo mr-2"></i>
+                        Renvoyer le code
+                    </a>
+                </div>
+
+                <!-- Retour -->
+                <div class="text-center pt-6 mt-6 border-t border-gray-200">
+                    <a href="{% url 'connexion' %}" class="text-gray-600 hover:text-gray-800 text-sm flex items-center justify-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour à la connexion
+                    </a>
+                </div>
+            </div>
+
+            <!-- Information supplémentaire -->
+            <div class="text-center">
+                <p class="text-xs text-gray-500">
+                    <i class="fas fa-lock mr-1"></i>
+                    Connexion sécurisée par authentification à deux facteurs
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-format et auto-submit du code OTP
+        const otpInput = document.getElementById('otp_code');
+        
+        otpInput.addEventListener('input', function(e) {
+            // Accepter uniquement les chiffres
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Auto-submit quand 6 chiffres sont entrés
+            if (this.value.length === 6) {
+                this.form.submit();
+            }
+        });
+
+        // Focus automatique sur le champ
+        otpInput.focus();
+    </script>
+</body>
+</html>

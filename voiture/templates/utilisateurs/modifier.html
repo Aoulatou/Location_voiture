@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="card-title text-2xl mb-6">Modification d'un Utilisateur</h2>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Nom *</span>
+                    </label>
+                    <input type="text" name="nom" class="input input-bordered" required value="{{ utilisateur.nom }}">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Prénom *</span>
+                    </label>
+                    <input type="text" name="prenom" class="input input-bordered" required
+                        value="{{ utilisateur.prenom }}">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Email *</span>
+                    </label>
+                    <input type="email" name="email" class="input input-bordered" required
+                        value="{{ utilisateur.email }}">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Téléphone *</span>
+                    </label>
+                    <input type="tel" name="telephone" class="input input-bordered" required
+                        value="{{ utilisateur.telephone }}">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Adresse *</span>
+                    </label>
+                    <textarea name="adresse" class="textarea textarea-bordered h-12" required>
+                        {{ utilisateur.adresse }}
+                    </textarea>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Rôle *</span>
+                    </label>
+                    <select name="role" class="select select-bordered" required>
+                        <option value="">Sélectionner un rôle</option>
+                        <option value="client" {% if utilisateur.role == 'client' %}selected{% endif %}>Client</option>
+                        <option value="proprietaire" {% if utilisateur.role == 'proprietaire' %}selected{% endif %}>
+                            Propriétaire</option>
+                        <option value="veyra" {% if utilisateur.role == 'veyra' %}selected{% endif %}>Veyra</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="divider">Changer le mot de passe (optionnel)</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Nouveau mot de passe</span>
+                    </label>
+                    <input type="password" placeholder="Laisser vide pour conserver l'actuel"
+                        class="input input-bordered">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Confirmer le nouveau mot de passe</span>
+                    </label>
+                    <input type="password" placeholder="Confirmer le nouveau mot de passe" class="input input-bordered">
+                </div>
+            </div>
+
+            <div class="card-actions justify-end space-x-4 mt-4">
+                <a href="{% url 'liste_utilisateurs' %}" class="btn btn-error">Annuler</a>
+                <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-6">Modification d'un avis</h2>
+
+        <form method="POST" action="{% url 'modifier_avis' avis.id %}" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Client *</span>
+                    </label>
+                    <select name="utilisateur" class="select select-bordered" required>
+                        <option value="">Sélectionner un client</option>
+                        {% for u in utilisateurs %}
+                        <option value="{{ u.id }}" {% if avis.utilisateur.id == u.id %}selected{% endif %}>
+                            {{ u.nom }} {{ u.prenom }}
+                        </option>
+                    {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Voiture *</span>
+                </label>
+                <select name="voiture" class="select select-bordered" required>
+                    {% for v in voitures %}
+                        <option value="{{ v.id }}" {% if avis.voiture.id == v.id %}selected{% endif %}>
+                            {{ v.marque }} {{ v.modele }} - {{ v.immatriculation }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Note *</span>
+                    </label>
+                    <input type="number" value="{{ avis.note }}" name="note" min="1" max="5" class="input input-bordered" required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Commentaire *</span>
+                    </label>
+                    <textarea name="commentaire" class="textarea textarea-bordered">
+                        {{ avis.commentaire }}
+                    </textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Date Avis *</span>
+                    </label>
+                    <input type="date" name="dateAvis" value="{{ avis.dateAvis|date:'Y-m-d' }}" class="input input-bordered" required>
+                </div>
+            </div> 
+
+            <div class="card-actions justify-end space-x-4">
+                <a href="{% url 'liste_avis' %}" class="btn btn-error">
+                    Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Sauvegarder les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

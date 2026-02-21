@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- En-tête -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Réservation de véhicule</h1>
+                <p class="text-gray-600">Finalisez votre réservation en quelques clics</p>
+            </div>
+
+            <!-- Carte du véhicule -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="md:flex">
+                    <!-- Image du véhicule -->
+                    <div class="md:w-1/2">
+                        {% if voiture.photo %}
+                        <img src="{{ voiture.photo.url }}" 
+                             alt="{{ voiture.marque }} {{ voiture.modele }}" 
+                             class="w-full h-64 md:h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-64 md:h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-car text-6xl text-gray-400"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Détails du véhicule -->
+                    <div class="md:w-1/2 p-8">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                                {{ voiture.marque }} {{ voiture.modele }}
+                            </h2>
+                            {% if voiture.disponibilite %}
+                            <div class="badge badge-success mb-4">Disponible</div>
+                            {% else %}
+                            <div class="badge badge-error mb-4">Indisponible</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-calendar-alt w-5 mr-3 text-indigo-600"></i>
+                                <span><strong>Année :</strong> {{ voiture.annee }}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-palette w-5 mr-3 text-indigo-600"></i>
+                                <span><strong>Couleur :</strong> {{ voiture.couleur }}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-users w-5 mr-3 text-indigo-600"></i>
+                                <span><strong>Places :</strong> {{ voiture.nb_places }}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-cog w-5 mr-3 text-indigo-600"></i>
+                                <span><strong>Transmission :</strong> {{ voiture.transmission }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-indigo-50 rounded-xl p-4">
+                            <div class="text-center">
+                                <span class="text-3xl font-bold text-indigo-600">{{ voiture.prix_jour|floatformat:0 }}</span>
+                                <span class="text-gray-600 ml-1">FCFA / jour</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de réservation -->
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <div class="border-l-4 border-indigo-500 pl-6 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Détails de la réservation</h3>
+                    <p class="text-gray-600">Sélectionnez vos dates de location</p>
+                </div>
+
+                <form method="post" class="space-y-6" id="reservationForm">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Date de début -->
+                        <div class="space-y-2">
+                            <label for="dateDebut" class="text-sm font-medium text-gray-700 flex items-center">
+                                <i class="fas fa-calendar-plus mr-2 text-green-600"></i>
+                                Date de début
+                            </label>
+                            <input type="date" 
+                                   name="dateDebut" 
+                                   id="dateDebut" 
+                                   class="input input-bordered input-lg w-full focus:border-indigo-500" 
+                                   min="{{ today|date:'Y-m-d' }}"
+                                   required>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Date minimale : aujourd'hui
+                            </div>
+                        </div>
+
+                        <!-- Date de fin -->
+                        <div class="space-y-2">
+                            <label for="dateFin" class="text-sm font-medium text-gray-700 flex items-center">
+                                <i class="fas fa-calendar-minus mr-2 text-red-600"></i>
+                                Date de fin
+                            </label>
+                            <input type="date" 
+                                   name="dateFin" 
+                                   id="dateFin" 
+                                   class="input input-bordered input-lg w-full focus:border-indigo-500" 
+                                   min="{{ today|date:'Y-m-d' }}"
+                                   required>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Doit être après la date de début
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif -->
+                    <div class="bg-gray-50 rounded-xl p-6" id="resume" style="display: none;">
+                        <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-calculator mr-2 text-indigo-600"></i>
+                            Récapitulatif de la réservation
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Période de location :</span>
+                                <span id="periode" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Durée :</span>
+                                <span id="duree" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Prix par jour :</span>
+                                <span class="font-medium">{{ voiture.prix_jour|floatformat:0 }} FCFA</span>
+                            </div>
+                            <div class="border-t pt-3 mt-3">
+                                <div class="flex justify-between items-center text-xl font-bold text-indigo-600">
+                                    <span>Total à payer :</span>
+                                    <span id="total">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations importantes -->
+                    <div class="bg-blue-50 rounded-xl p-6">
+                        <h4 class="font-semibold text-blue-900 mb-3 flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Informations importantes
+                        </h4>
+                        <ul class="text-sm text-blue-800 space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                                Le véhicule sera disponible à partir de 8h00 le jour de début
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                                Retour du véhicule avant 18h00 le jour de fin
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                                Permis de conduire valide obligatoire
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                                Assurance incluse
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Conditions -->
+                    <div class="bg-blue-50 rounded-xl p-6">
+                        <label class="flex items-start cursor-pointer">
+                            <input type="checkbox" class="checkbox checkbox-primary mt-1 mr-4" required>
+                            <span class="text-sm text-gray-700 leading-relaxed">
+                                J'accepte les 
+                                <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium underline">conditions de location</a> 
+                                et certifie être en possession d'un permis de conduire valide.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t">
+                        <button type="submit" class="btn btn-primary btn-lg flex-1" id="submitBtn">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Confirmer la réservation
+                        </button>
+                        <a href="{% url 'Veyra' %}" class="btn btn-outline btn-lg sm:w-auto">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Retour au catalogue
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aide et support -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-headset mr-2 text-indigo-600"></i>
+                    Besoin d'aide ?
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Notre équipe est disponible pour vous accompagner dans votre réservation.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="tel:+22780808080" class="btn btn-outline">
+                        <i class="fas fa-phone mr-2"></i>
+                        Appelez-nous : +227 92 62 88 15
+                    </a>
+                    <a href="mailto:contact@veyra.ne" class="btn btn-outline">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Email : contact.veyra1@gmail.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calcul automatique du prix total
+    const dateDebut = document.getElementById('dateDebut');
+    const dateFin = document.getElementById('dateFin');
+    const resume = document.getElementById('resume');
+    const periodeElement = document.getElementById('periode');
+    const dureeElement = document.getElementById('duree');
+    const totalElement = document.getElementById('total');
+    const submitBtn = document.getElementById('submitBtn');
+    const prixParJour = "{{ voiture.prix_jour }}";
+
+    function calculerTotal() {
+        if (dateDebut.value && dateFin.value) {
+            const debut = new Date(dateDebut.value);
+            const fin = new Date(dateFin.value);
+            const diffTime = fin - debut;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 0) {
+                const total = diffDays * prixParJour;
+                
+                // Formatage des dates
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const debutFormat = debut.toLocaleDateString('fr-FR', options);
+                const finFormat = fin.toLocaleDateString('fr-FR', options);
+                
+                periodeElement.textContent = `${debutFormat} - ${finFormat}`;
+                dureeElement.textContent = diffDays + (diffDays > 1 ? ' jours' : ' jour');
+                totalElement.textContent = total.toLocaleString() + ' FCFA';
+                
+                resume.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Confirmer la réservation';
+            } else {
+                resume.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Dates invalides';
+            }
+        } else {
+            resume.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-calendar mr-2"></i>Sélectionnez les dates';
+        }
+    }
+
+    // Écouteurs d'événements
+    dateDebut.addEventListener('change', function() {
+        // Mettre à jour la date minimum de fin
+        dateFin.min = this.value;
+        calculerTotal();
+    });
+
+    dateFin.addEventListener('change', calculerTotal);
+
+    // Définir la date minimum à aujourd'hui
+    const today = new Date().toISOString().split('T')[0];
+    dateDebut.min = today;
+    dateFin.min = today;
+
+    // État initial du bouton
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-calendar mr-2"></i>Sélectionnez les dates';
+
+    // Validation du formulaire avant soumission
+    document.getElementById('reservationForm').addEventListener('submit', function(e) {
+        const checkbox = this.querySelector('input[type="checkbox"]');
+        if (!checkbox.checked) {
+            e.preventDefault();
+            alert('Vous devez accepter les conditions pour continuer.');
+            return false;
+        }
+        
+        if (!dateDebut.value || !dateFin.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner les dates de début et de fin.');
+            return false;
+        }
+        
+        // Animation du bouton de soumission
+        submitBtn.innerHTML = '<span class="loading loading-spinner"></span>Traitement en cours...';
+        submitBtn.disabled = true;
+    });
+</script>
+
+{% endblock %}

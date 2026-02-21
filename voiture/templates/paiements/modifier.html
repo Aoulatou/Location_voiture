@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-6">Modification d'un Paiement</h2>
+
+        <form method="POST" action="{% url 'modifier_paiements' paiement.id %}" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Réservation *</span>
+                    </label>
+                    <select name="reservation" class="select select-bordered" required>
+                        <option value="">Sélectionner une réservation </option>
+                        {% for r in reservations %}
+                        <option value="{{ r.id }}" {% if r.id == paiement.reservation.id %}selected{% endif %}>
+                            {{ r.utilisateur.nom }} {{ r.utilisateur.prenom }} - {{ r.voiture.marque }} 
+                            {{ r.voiture.modele }} ({{ r.montant }} FCFA)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Moyen de paiement *</span>
+                    </label>
+                    <select name="moyenPaiement" class="select select-bordered" required>
+                        <option value="Carte" {% if paiement.moyenPaiement == "Carte" %}selected{% endif %}>Carte bancaire</option>
+                        <option value="PayPal" {% if paiement.moyenPaiement == "PayPal" %}selected{% endif %}>PayPal</option>
+                        <option value="MobileMoney" {% if paiement.moyenPaiement == "MobileMoney" %}selected{% endif %}>Mobile Money</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Date de paiement *</span>
+                    </label>
+                    <input type="date" name="datePaiement" value="{{ paiement.datePaiement|date:'Y-m-d' }}" class="input input-bordered" required>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Statut de paiement *</span>
+                    </label>
+                    <select name="statutP" class="select select-bordered" required>
+                        <option value="effectue" {% if paiement.statutP == "effectue" %}selected{% endif %}>Effectué</option>
+                        <option value="echoue" {% if paiement.statutP == "echoue" %}selected{% endif %}>Échoué</option>
+                        <option value="rembourse" {% if paiement.statutP == "rembourse" %}selected{% endif %}>Remboursé</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card-actions justify-end space-x-4">
+                <a href="{% url 'liste_paiements' %}" class="btn btn-error">
+                    Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Sauvegarder les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

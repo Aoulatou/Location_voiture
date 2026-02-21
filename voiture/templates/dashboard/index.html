@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Veyra{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- En-tête -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Tableau de bord</h1>
+            <p class="text-gray-600 mt-1">Vue d'ensemble de Veyra</p>
+        </div>
+        <div class="text-right">
+            <p class="text-sm text-gray-600">Dernière mise à jour</p>
+            <p class="font-semibold">{{ today|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Métriques principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Utilisateurs -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <span class="badge badge-sm bg-white/20">+{{ nouveaux_utilisateurs }} ce mois</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-1">{{ total_utilisateurs }}</h3>
+            <p class="text-blue-100">Utilisateurs</p>
+        </div>
+
+        <!-- Total Véhicules -->
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-car text-2xl"></i>
+                </div>
+                <span class="badge badge-sm bg-white/20">{{ voitures_disponibles }} disponibles</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-1">{{ total_voitures }}</h3>
+            <p class="text-green-100">Véhicules</p>
+        </div>
+
+        <!-- Total Réservations -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-2xl"></i>
+                </div>
+                <span class="badge badge-sm bg-white/20">{{ reservations_ce_mois }} ce mois</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-1">{{ total_reservations }}</h3>
+            <p class="text-purple-100">Réservations</p>
+        </div>
+
+        <!-- Revenus -->
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-coins text-2xl"></i>
+                </div>
+                <span class="badge badge-sm bg-white/20">{{ revenus_cette_semaine|floatformat:0 }} cette semaine</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-1">{{ revenus_total|floatformat:0 }}</h3>
+            <p class="text-orange-100">FCFA de revenus</p>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Réservations par jour -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Réservations (30 derniers jours)</h3>
+            <canvas id="reservationsChart"></canvas>
+        </div>
+
+        <!-- Revenus par mois -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Revenus (6 derniers mois)</h3>
+            <canvas id="revenusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Statut des réservations -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Répartition par statut -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Statut des réservations</h3>
+            <canvas id="statutChart"></canvas>
+        </div>
+
+        <!-- Top Voitures -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Véhicules les plus réservés</h3>
+            <div class="space-y-3">
+                {% for voiture in top_voitures %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-car text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-sm">{{ voiture.marque }} {{ voiture.modele }}</p>
+                            <p class="text-xs text-gray-500">{{ voiture.nb_reservations }} réservation{{ voiture.nb_reservations|pluralize }}</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-primary">{{ voiture.nb_reservations }}</span>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">Aucune donnée</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Clients -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">Clients les plus actifs</h3>
+            <div class="space-y-3">
+                {% for client in top_clients %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">
+                            {{ client.nom.0 }}{{ client.prenom.0 }}
+                        </div>
+                        <div>
+                            <p class="font-medium text-sm">{{ client.nom }} {{ client.prenom }}</p>
+                            <p class="text-xs text-gray-500">{{ client.nb_reservations }} réservation{{ client.nb_reservations|pluralize }}</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-success">{{ client.nb_reservations }}</span>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">Aucune donnée</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Réservations récentes -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Réservations récentes</h3>
+            <a href="{% url 'liste_reservations' %}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                Voir tout <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Client</th>
+                        <th>Véhicule</th>
+                        <th>Dates</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations_recentes %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="font-mono text-sm">{{ reservation.numero }}</td>
+                        <td>{{ reservation.utilisateur.nom }} {{ reservation.utilisateur.prenom }}</td>
+                        <td>{{ reservation.voiture.marque }} {{ reservation.voiture.modele }}</td>
+                        <td class="text-sm">{{ reservation.dateDebut|date:"d/m" }} - {{ reservation.dateFin|date:"d/m" }}</td>
+                        <td class="font-semibold">{{ reservation.montant|floatformat:0 }} FCFA</td>
+                        <td>
+                            {% if reservation.statutR == 'confirmee' %}
+                            <span class="badge badge-success badge-sm">Confirmée</span>
+                            {% elif reservation.statutR == 'en_cours' %}
+                            <span class="badge badge-info badge-sm">En cours</span>
+                            {% elif reservation.statutR == 'en_attente' %}
+                            <span class="badge badge-warning badge-sm">En attente</span>
+                            {% else %}
+                            <span class="badge badge-error badge-sm">Annulée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-gray-500 py-8">Aucune réservation</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{ reservations_par_jour|json_script:"reservations-data" }}
+{{ revenus_par_mois|json_script:"revenus-data" }}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique Réservations par jour
+    const reservationsParJour = JSON.parse(document.getElementById('reservations-data').textContent);
+    const ctx1 = document.getElementById("reservationsChart").getContext("2d");
+    new Chart(ctx1, {
+        type: "line",
+        data: {
+            labels: reservationsParJour.map(item => item.date),
+            datasets: [{
+                label: "Réservations",
+                data: reservationsParJour.map(item => item.count),
+                borderColor: "rgb(99, 102, 241)",
+                backgroundColor: "rgba(99, 102, 241, 0.1)",
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Graphique Revenus par mois
+    const revenusParMois = JSON.parse(document.getElementById("revenus-data").textContent);
+    const ctx2 = document.getElementById("revenusChart").getContext("2d");
+    new Chart(ctx2, {
+        type: "bar",
+        data: {
+            labels: revenusParMois.map(item => item.mois),
+            datasets: [{
+                label: "Revenus (FCFA)",
+                data: revenusParMois.map(item => item.total),
+                backgroundColor: "rgba(251, 146, 60, 0.8)",
+                borderColor: "rgb(251, 146, 60)",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Graphique Statut - Construction des données avant Chart.js
+    const statutLabels = [];
+    const statutData = [];
+    const statutColors = {
+        "CONFIRMEE": "rgba(34, 197, 94, 0.8)",
+        "EN_COURS": "rgba(59, 130, 246, 0.8)",
+        "EN_ATTENTE": "rgba(251, 191, 36, 0.8)",
+        "ANNULEE": "rgba(239, 68, 68, 0.8)",
+        "TERMINEE": "rgba(156, 163, 175, 0.8)"
+    };
+
+    // Statut des réservations 
+    const ctx3 = document.getElementById("statutChart").getContext("2d");
+    const backgroundColors = statutLabels.map(label => statutColors[label] || "rgba(156, 163, 175, 0.8)");
+    
+    new Chart(ctx3, {
+        type: "doughnut",
+        data: {
+            labels: statutLabels.map(label => {
+                // Traduire les statuts en français
+                const traductions = {
+                    "CONFIRMEE": "Confirmée",
+                    "EN_COURS": "En cours",
+                    "EN_ATTENTE": "En attente",
+                    "ANNULEE": "Annulée",
+                    "TERMINEE": "Terminée"
+                };
+                return traductions[label] || label;
+            }),
+            datasets: [{
+                data: statutData,
+                backgroundColor: backgroundColors
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

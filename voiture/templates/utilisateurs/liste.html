@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Utilisateurs - Veyra{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li><a href="" class="text-indigo-600 hover:text-indigo-800">
+                <i class="fas fa-home mr-1"></i>
+                Dashboard
+            </a></li>
+            <li class="text-gray-600">Gestion des utilisateurs</li>
+        </ul>
+    </div>
+
+    <!-- En-tête -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-6 lg:mb-0">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestion des Utilisateurs</h1>
+            <p class="text-gray-600">Gérez tous les utilisateurs de la plateforme</p>
+        </div>
+        <div>
+            <a href="{% url 'ajouter_utilisateurs' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus mr-2"></i>
+                Nouvel Utilisateur
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-xl shadow-lg p-4">
+        <form method="get" class="flex flex-col lg:flex-row gap-4 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Rechercher par nom, prénom ou email..." 
+                           value="{{ search }}"
+                           class="input input-bordered w-full pl-10">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            
+            <div class="lg:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filtrer par rôle</label>
+                <select name="role" class="select select-bordered w-full">
+                    <option value="" {% if not role %}selected{% endif %}>Tous les rôles</option>
+                    <option value="client" {% if role == "client" %}selected{% endif %}>Client</option>
+                    <option value="proprietaire" {% if role == "proprietaire" %}selected{% endif %}>Propriétaire</option>
+                    <option value="veyra" {% if role == "veyra" %}selected{% endif %}>Veyra</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filtrer
+                </button>
+                <a href="{% url 'liste_utilisateurs' %}" class="btn btn-outline">
+                    <i class="fas fa-times mr-2"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        {% if utilisateurs %}
+        <!-- Version desktop - Tableau -->
+        <div class="hidden lg:block">
+            <table class="table w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left font-semibold text-gray-700 py-4">#</th>
+                        <th class="text-left font-semibold text-gray-700">Utilisateur</th>
+                        <th class="text-left font-semibold text-gray-700">Contact</th>
+                        <th class="text-left font-semibold text-gray-700">Adresse</th>
+                        <th class="text-left font-semibold text-gray-700">Rôle</th>
+                        <th class="text-left font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in utilisateurs %}
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="py-4 font-medium text-gray-900">{{ forloop.counter }}</td>
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-indigo-600 font-semibold">{{ u.nom.0 }}{{ u.prenom.0 }}</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ u.nom }} {{ u.prenom }}</div>
+                                    <div class="text-gray-500">
+                                        <i class="fas fa-arrow-right mr-1"></i>
+                                        {{ u.date_creation|date:"d/m/Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="text-gray-900">{{ u.email }}</div>
+                                <div class="text-gray-500">{{ u.telephone|default:"Non renseigné" }}</div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm text-gray-600 max-w-xs truncate">
+                                {{ u.adresse|default:"Non renseignée" }}
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            {% if u.role == 'client' %}
+                            <span class="badge badge-info">
+                                <i class="fas fa-user mr-1"></i>
+                                Client
+                            </span>
+                            {% elif u.role == 'proprietaire' %}
+                            <span class="badge badge-success">
+                                <i class="fas fa-user-tie mr-1"></i>
+                                Propriétaire
+                            </span>
+                            {% else %}
+                            <span class="badge badge-warning">
+                                <i class="fas fa-crown mr-1"></i>
+                                Veyra
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'modifier_utilisateurs' u.id %}" 
+                                   class="btn btn-sm btn-outline btn-primary">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Modifier
+                                </a>
+                                <a href="{% url 'supprimer_utilisateurs' u.id %}"                                       
+                                    class="btn btn-sm btn-outline btn-error">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if utilisateurs.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex justify-center">
+                <div class="btn-group">
+                    {% if utilisateurs.has_previous %}
+                    <a href="?page={{ utilisateurs.previous_page_number }}&search={{ search }}&role={{ role }}" 
+                       class="btn btn-outline">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in utilisateurs.paginator.page_range %}
+                    {% if num == utilisateurs.number %}
+                    <a href="?page={{ num }}&search={{ search }}&role={{ role }}" 
+                       class="btn btn-primary">{{ num }}</a>
+                    {% elif num > utilisateurs.number|add:'-3' and num < utilisateurs.number|add:'3' %}
+                    <a href="?page={{ num }}&search={{ search }}&role={{ role }}" 
+                       class="btn btn-outline">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if utilisateurs.has_next %}
+                    <a href="?page={{ utilisateurs.next_page_number }}&search={{ search }}&role={{ role }}" 
+                       class="btn btn-outline">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- État vide -->
+        <div class="p-12 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-users text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucun utilisateur trouvé</h3>
+            <p class="text-gray-600 mb-8">
+                {% if search or role %}
+                Aucun utilisateur ne correspond à vos critères de recherche.
+                {% else %}
+                Il n'y a pas encore d'utilisateurs dans le système.
+                {% endif %}
+            </p>
+            {% if search or role %}
+            <a href="{% url 'liste_utilisateurs' %}" class="btn btn-outline mr-4">
+                <i class="fas fa-times mr-2"></i>
+                Effacer les filtres
+            </a>
+            {% endif %}
+            <a href="{% url 'ajouter_utilisateurs' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus mr-2"></i>
+                Ajouter un utilisateur
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}

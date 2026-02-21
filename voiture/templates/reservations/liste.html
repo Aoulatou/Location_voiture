@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Réservations - Veyra{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li><a href="" class="text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-home mr-1"></i>
+                    Dashboard
+                </a></li>
+            <li class="text-gray-600">Gestion des réservations</li>
+        </ul>
+    </div>
+
+    <!-- En-tête -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-6 lg:mb-0">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestion des Réservations</h1>
+            <p class="text-gray-600">Gérez toutes les réservations de la plateforme</p>
+        </div>
+        <div>
+            <a href="{% url 'ajouter_reservations' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-plus mr-2"></i>
+                Nouvelle Réservation
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-xl shadow-lg p-4">
+        <form method="get" class="flex flex-col lg:flex-row gap-4 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+                <div class="relative">
+                    <input type="text" name="search" placeholder="Rechercher par numéro, client ou voiture..."
+                        value="{{ search }}" class="input input-bordered w-full pl-10">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="lg:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filtrer par statut</label>
+                <select name="statutR" class="select select-bordered w-full">
+                    <option value="" {% if not statutR %}selected{% endif %}>Tous les statuts</option>
+                    <option value="en_attente" {% if statutR == "en_attente" %}selected{% endif %}>En attente</option>
+                    <option value="en_attente" {% if statutR == "en_cours" %}selected{% endif %}>En cours</option>
+                    <option value="confirmee" {% if statutR == "confirmee" %}selected{% endif %}>Confirmée</option>
+                    <option value="confirmee" {% if statutR == "terminee" %}selected{% endif %}>Terminée</option>
+                    <option value="annulee" {% if statutR == "annulee" %}selected{% endif %}>Annulée</option>
+                </select>
+            </div>
+
+            <div class="lg:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+                <select name="periode" class="select select-bordered w-full">
+                    <option value="" {% if not periode %}selected{% endif %}>Toutes les périodes</option>
+                    <option value="aujourd_hui" {% if periode == "aujourd_hui" %}selected{% endif %}>Aujourd'hui</option>
+                    <option value="cette_semaine" {% if periode == "cette_semaine" %}selected{% endif %}>Cette semaine
+                    </option>
+                    <option value="ce_mois" {% if periode == "ce_mois" %}selected{% endif %}>Ce mois</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filtrer
+                </button>
+                <a href="{% url 'liste_reservations' %}" class="btn btn-outline">
+                    <i class="fas fa-times mr-2"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des réservations -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        {% if reservations %}
+        <div class="hidden lg:block">
+            <table class="table w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left font-semibold text-gray-700 py-4">#</th>
+                        <th class="text-left font-semibold text-gray-700">Réservation</th>
+                        <th class="text-left font-semibold text-gray-700">Client</th>
+                        <th class="text-left font-semibold text-gray-700">Voiture</th>
+                        <th class="text-left font-semibold text-gray-700">Période</th>
+                        <th class="text-left font-semibold text-gray-700">Montant</th>
+                        <th class="text-left font-semibold text-gray-700">Statut</th>
+                        <th class="text-left font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="py-4 font-medium text-gray-900">{{ forloop.counter }}</td>
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ r.numero }}</div>
+                                    <div class="text-gray-500">
+                                        <i class="fas fa-arrow-right mr-1"></i>
+                                        {{ r.date_creation|date:"d/m/Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-900">
+                                    {{ r.utilisateur.nom }} {{ r.utilisateur.prenom }}</div>
+                                <div class="text-gray-500">{{ r.utilisateur.email }}</div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-900">{{ r.voiture.marque }} {{ r.voiture.modele }}
+                                </div>
+                                <div class="text-gray-500">{{ r.voiture.immatriculation }}</div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="text-gray-900">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    {{ r.dateDebut|date:"d/m/Y" }}
+                                </div>
+                                <div class="text-gray-500">
+                                    <i class="fas fa-arrow-right mr-1"></i>
+                                    {{ r.dateFin|date:"d/m/Y" }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="font-semibold text-lg text-indigo-600">
+                                {{ r.montant|floatformat:0 }} FCFA
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            {% if r.statutR == 'en_attente' %}
+                            <span class="badge badge-warning">
+                                <i class="fas fa-clock mr-1"></i>
+                                En attente
+                            </span>
+                            {% elif r.statutR == 'en_cours' %}
+                            <span class="badge badge-info">
+                                <i class="fas fa-check mr-1"></i>
+                                En cours
+                            </span>{% elif r.statutR == 'confirmee' %}
+                            <span class="badge badge-success">
+                                <i class="fas fa-check mr-1"></i>
+                                Confirmée
+                            </span>{% elif r.statutR == 'terminee' %}
+                            <span class="badge badge-secondary">
+                                <i class="fas fa-check mr-1"></i>
+                                Terminée
+                            </span>
+                            {% else %}
+                            <span class="badge badge-error">
+                                <i class="fas fa-times mr-1"></i>
+                                Annulée
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'modifier_reservations' r.id %}"
+                                    class="btn btn-sm btn-outline btn-primary">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Modifier
+                                </a>
+                                <a href="{% url 'supprimer_reservations' r.id %}"
+                                    class="btn btn-sm btn-outline btn-error">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if reservations.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex justify-center">
+                <div class="btn-group">
+                    {% if reservations.has_previous %}
+                    <a href="?page={{ reservations.previous_page_number }}&search={{ search }}&statutR={{ statutR }}&periode={{ periode }}"
+                        class="btn btn-outline">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in reservations.paginator.page_range %}
+                    {% if num == reservations.number %}
+                    <a href="?page={{ num }}&search={{ search }}&statutR={{ statutR }}&periode={{ periode }}"
+                        class="btn btn-primary">{{ num }}</a>
+                    {% elif num > reservations.number|add:'-3' and num < reservations.number|add:'3' %} <a
+                        href="?page={{ num }}&search={{ search }}&statutR={{ statutR }}&periode={{ periode }}"
+                        class="btn btn-outline">{{ num }}</a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if reservations.has_next %}
+                        <a href="?page={{ reservations.next_page_number }}&search={{ search }}&statutR={{ statutR }}&periode={{ periode }}"
+                            class="btn btn-outline">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- État vide -->
+        <div class="p-12 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-calendar-alt text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucune réservation trouvée</h3>
+            <p class="text-gray-600 mb-8">
+                {% if search or statutR or periode %}
+                Aucune réservation ne correspond à vos critères de recherche.
+                {% else %}
+                Il n'y a pas encore de réservations dans le système.
+                {% endif %}
+            </p>
+            {% if search or statutR or periode %}
+            <a href="{% url 'liste_reservations' %}" class="btn btn-outline mr-4">
+                <i class="fas fa-times mr-2"></i>
+                Effacer les filtres
+            </a>
+            {% endif %}
+            <a href="{% url 'ajouter_reservations' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus mr-2"></i>
+                Ajouter une réservation
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

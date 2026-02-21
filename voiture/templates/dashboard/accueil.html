@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veyra - Location de véhicules </title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-card {
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(209, 213, 219, 0.3);
+        }
+
+        .floating-animation {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%   { transform: translateY(0px); }
+            50%  { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .car-card:hover {
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body class="scroll-smooth">
+    <!-- Navigation -->
+    <nav class="navbar bg-white/90 backdrop-blur-md shadow-lg fixed top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <label tabindex="0" class="btn btn-ghost lg:hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h8m-8 6h16"></path>
+                    </svg>
+                </label>
+                <ul tabindex="0"
+                    class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="#accueil">Accueil</a></li>
+                    <li><a href="#catalogue">Catalogue</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <!-- Menu mobile pour utilisateur connecté -->
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'mes_reservations' %}">Mes réservations</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <a class="btn btn-ghost normal-case text-2xl font-bold text-indigo-600">
+                <i class="fas fa-car mr-2"></i>Veyra
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="#accueil" class="hover:text-indigo-600">Accueil</a></li>
+                <li><a href="#catalogue" class="hover:text-indigo-600">Catalogue</a></li>
+                <li><a href="#services" class="hover:text-indigo-600">Services</a></li>
+                <li><a href="#contact" class="hover:text-indigo-600">Contact</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'mes_reservations' %}" class="hover:text-indigo-600">Mes réservations</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Navigation droite - Gestion utilisateur connecté ou non -->
+        <div class="navbar-end">
+            {% if user.is_authenticated %}
+            <!-- Dropdown profil utilisateur -->
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                    <div class="w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-600"></i>
+                    </div>
+                </label>
+                <ul tabindex="0"
+                    class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                    <li class="menu-title">
+                        <span>Bonjour, {{ user.nom }} {{ user.prenom }}</span>
+                    </li>
+                    <li>
+                        <a href="{% url 'profil' %}">
+                            <i class="fas fa-user mr-2"></i>
+                            Mon profil
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mes_reservations' %}">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Mes réservations
+                        </a>
+                    </li>
+                    {% if user.is_authenticated and user.role == "client" %}
+                    <li>
+                        <a href="/avis">
+                            <i class="fas fa-tachometer-alt mr-2"></i>
+                            Avis & Commentaires
+                        </a>
+                    </li>
+                    {% endif%}
+                    {% if user.is_authenticated and user.role == "veyra" %}
+                    <li>
+                        <a href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt mr-2"></i>
+                            Tableau de bord
+                        </a>
+                    </li>
+                    {% endif%}
+                    <div class="divider my-2"></div>
+                    <li>
+                        <a href="{% url 'deconnexion' %}" class="text-red-600">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Se déconnecter
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Badge notification réservations -->
+            <div class="indicator mr-2">
+                <a href="{% url 'mes_reservations' %}" class="btn btn-ghost btn-circle">
+                    <i class="fas fa-calendar-check text-xl"></i>
+                    {% if reservations_actives_count > 0 %}
+                    <span class="badge badge-sm indicator-item badge-primary">{{ reservations_actives_count }}</span>
+                    {% endif %}
+                </a>
+            </div>
+            {% else %}
+            <!-- Boutons pour utilisateur non connecté -->
+            <a href="{% url 'connexion' %}" class="btn btn-outline btn-primary mr-2">Se connecter</a>
+            <a href="{% url 'inscription' %}" class="btn btn-primary">S'inscrire</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2 max-w-md">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-lg animate-slide-in">
+            <div>
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle text-lg"></i>
+                {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle text-lg"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle text-lg"></i>
+                {% else %}
+                <i class="fas fa-info-circle text-lg"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- Section Accueil -->
+    <section id="accueil" class="hero min-h-screen hero-gradient relative overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="media/voitures/2.jpg" 
+                 alt="Voiture de luxe" 
+                 class="w-full h-full object-cover opacity-50">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-900/75 via-blue-800/40 to-transparent"></div>
+        </div>
+        <div class="hero-content text-center text-white relative z-10">
+            <div class="max-w-4xl">
+                <div class="floating-animation mb-8">
+                    <i class="fas fa-car text-8xl opacity-20"></i>
+                </div>
+                <h1 class="text-6xl font-bold mb-6 leading-tight">
+                    {% if user.is_authenticated %}
+                    Bienvenue {{ user.nom }} {{ user.prenom}},<br>
+                    trouvez votre <span class="text-indigo-800">véhicule idéal</span>
+                    {% else %}
+                    La location de véhicules
+                    <span class="text-indigo-900">réinventée</span>
+                    {% endif %}
+                </h1>
+                <p class="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+                    Découvrez notre flotte premium de véhicules. Des citadines économiques aux voitures de luxe,
+                    trouvez le véhicule parfait pour tous vos déplacements.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a href="#catalogue" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search mr-2"></i>
+                        Voir le catalogue
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'mes_reservations' %}"
+                        class="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-gray-800">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Mes réservations
+                    </a>
+                    {% else %}
+                    <a href="#services"
+                        class="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-gray-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        En savoir plus
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Forme décorative -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1200 120" class="w-full h-20 fill-gray-50">
+                <path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Section Catalogue -->
+    <section id="catalogue" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <!-- En-tête de section -->
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold text-gray-800 mb-6">
+                    Notre <span class="text-indigo-600">Catalogue</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+                    Parcourez notre sélection de véhicules soigneusement entretenus,
+                    disponibles pour tous vos besoins de déplacement.
+                </p>
+
+                <!-- Barre de recherche moderne -->
+                <div class="max-w-2xl mx-auto">
+                    <form method="GET" action="{% url 'Veyra' %}">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" value="{{ search }}" name="search"
+                                class="input input-lg w-full pl-10 pr-20 bg-white shadow-lg border-0 focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Rechercher par marque, modèle, couleur...">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <button class="btn btn-primary">
+                                    Rechercher
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button class="btn btn-outline">Toutes</button>
+                <button class="btn btn-outline">Économique</button>
+                <button class="btn btn-outline">Compact</button>
+                <button class="btn btn-outline">SUV</button>
+                <button class="btn btn-outline">Luxe</button>
+            </div>
+
+            <!-- Grille de voitures -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for voiture in voitures %}
+                <div class="car-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl">
+                    <div class="relative">
+                        <img src="{{ voiture.photo.url }}" alt="{{ voiture.marque }}" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 right-4">
+                            {% if voiture.disponibilite %}
+                            <span class="badge badge-success">Disponible</span>
+                            {% else %}
+                            <span class="badge badge-error">Indisponible</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">
+                            {{ voiture.marque }} {{ voiture.modele }}
+                        </h3>
+                        <div class="flex items-center gap-4 text-gray-600 mb-4">
+                            <span><i class="fas fa-users mr-1"></i>{{ voiture.nb_places }}</span>
+                            <span><i class="fas fa-cog mr-1"></i>{{ voiture.transmission }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-3xl font-bold text-indigo-600">{{ voiture.prix_jour }}</span>
+                                <span class="text-gray-600"> FCFA/jour</span>
+                            </div>
+                            <label for="modal-{{ voiture.id }}" class="btn btn-primary">
+                                Détails
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <input type="checkbox" id="modal-{{ voiture.id }}" class="modal-toggle" />
+                <div class="modal">
+                    <div class="modal-box max-w-4xl">
+                        <h3 class="font-bold text-2xl mb-4 text-indigo-600">{{ voiture.marque }} {{ voiture.modele }}
+                            ({{ voiture.annee }})</h3>
+                        <img src="{{ voiture.photo.url }}" alt="{{ voiture.marque }}"
+                            class="w-full h-64 object-cover rounded-xl mb-6">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-4">
+                                <h4 class="text-xl font-semibold text-gray-800">Caractéristiques</h4>
+                                <div class="space-y-3">
+                                    <p class="flex items-center"><i
+                                            class="fas fa-palette text-indigo-600 w-6"></i><strong>Couleur :</strong>
+                                        <span class="ml-2">{{ voiture.couleur }}</span>
+                                    </p>
+                                    <p class="flex items-center"><i
+                                            class="fas fa-cog text-indigo-600 w-6"></i><strong>Transmission :</strong>
+                                        <span class="ml-2">{{ voiture.transmission }}</span>
+                                    </p>
+                                    <p class="flex items-center"><i
+                                            class="fas fa-users text-indigo-600 w-6"></i><strong>Nombre de places
+                                            :</strong> <span class="ml-2">{{ voiture.nb_places }}</span></p>
+                                    <p class="flex items-center"><i
+                                            class="fas fa-id-card text-indigo-600 w-6"></i><strong>Immatriculation
+                                            :</strong> <span class="ml-2">{{ voiture.immatriculation }}</span></p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <h4 class="text-xl font-semibold text-gray-800">Tarifs & Disponibilité</h4>
+                                <div class="bg-indigo-50 p-4 rounded-xl">
+                                    <p class="text-3xl font-bold text-indigo-600 mb-2">{{ voiture.prix_jour }} FCFA</p>
+                                    <p class="text-gray-600">par jour</p>
+                                    <div class="mt-4">
+                                        {% if voiture.disponibilite %}
+                                        <span class="badge badge-success">Disponible</span>
+                                        {% else %}
+                                        <span class="badge badge-error">Indisponible</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <p class="text-sm text-gray-600">✓ Assurance prenium incluse</p>
+                                    <p class="text-sm text-gray-600">✓ GPS haut de gamme</p>
+                                    <p class="text-sm text-gray-600">✓ Climatisation incluse</p>
+                                    <p class="text-sm text-gray-600">✓ Chauffeur disponible (optionnel)</p>
+                                    <p class="text-sm text-gray-600">✓ Support 24/7</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">Description</h4>
+                            <p class="text-gray-600">{{ voiture.description }}</p>
+                        </div>
+
+                        <div class="modal-action">
+                            <label for="modal-{{ voiture.id }}" class="btn btn-outline">
+                                Fermer
+                            </label>
+
+                            <!-- Bouton réserver avec logique corrigée -->
+                            {% if voiture.disponibilite %}
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'reserver_voiture' %}?voiture_id={{ voiture.id }}" class="btn btn-success">
+                                <i class="fas fa-calendar-check mr-2"></i>
+                                Réserver maintenant
+                            </a>
+                            {% else %}
+                            <a href="{% url 'connexion' %}?next={% url 'reserver_voiture' %}?voiture_id={{ voiture.id }}"
+                                class="btn btn-warning">
+                                <i class="fas fa-sign-in-alt mr-2"></i>
+                                Se connecter pour réserver
+                            </a>
+                            {% endif %}
+                            {% else %}
+                            <button class="btn btn-disabled" disabled>
+                                <i class="fas fa-times mr-2"></i>
+                                Véhicule indisponible
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+            </div>
+
+            <!-- Bouton voir plus -->
+            <div class="text-center mt-12">
+                <button class="btn btn-outline btn-lg">
+                    Voir plus de véhicules
+                    <i class="fas fa-arrow-down ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Services -->
+    <section id="services" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold text-gray-800 mb-6">
+                    Nos <span class="text-indigo-600">Services</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Une expérience de location complète avec des services premium pour votre tranquillité d'esprit.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-shield-alt text-3xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Assurance complète</h3>
+                    <p class="text-gray-600">Tous nos véhicules sont couverts par une assurance tous risques pour votre
+                        sécurité.</p>
+                </div>
+
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-clock text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Service 24/7</h3>
+                    <p class="text-gray-600">Support client disponible 24h/24 et 7j/7 pour tous vos besoins.</p>
+                </div>
+
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-tools text-3xl text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Maintenance premium</h3>
+                    <p class="text-gray-600">Véhicules régulièrement entretenus et contrôlés pour votre confort.</p>
+                </div>
+
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-map-marked-alt text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">GPS inclus</h3>
+                    <p class="text-gray-600">Navigation GPS intégrée dans tous nos véhicules pour ne jamais vous perdre.
+                    </p>
+                </div>
+
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-gas-pump text-3xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Plein offert</h3>
+                    <p class="text-gray-600">Réservoir plein à la prise en charge et à la restitution du véhicule.</p>
+                </div>
+
+                <div class="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-mobile-alt text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">App mobile</h3>
+                    <p class="text-gray-600">Gérez vos réservations facilement depuis notre application mobile.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Contact -->
+    <section id="contact" class="py-20 bg-gray-900 text-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-6">
+                    Contactez-<span class="text-indigo-400">nous</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Une question ? Un besoin particulier ? Notre équipe est là pour vous accompagner.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-3xl font-bold mb-8">Restons en contact</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Téléphone</p>
+                                <p class="text-gray-300">+227 92 62 88 15</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Email</p>
+                                <p class="text-gray-300">contact.veyra1@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Adresse</p>
+                                <p class="text-gray-300">Niamey, Niger</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm p-8 rounded-2xl">
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="text" placeholder="Votre nom"
+                                class="input input-bordered bg-white/20 text-white placeholder-gray-300">
+                            <input type="email" placeholder="Votre email"
+                                class="input input-bordered bg-white/20 text-white placeholder-gray-300">
+                        </div>
+                        <input type="text" placeholder="Sujet"
+                            class="input input-bordered w-full bg-white/20 text-white placeholder-gray-300">
+                        <textarea placeholder="Votre message"
+                            class="textarea textarea-bordered w-full h-32 bg-white/20 text-white placeholder-gray-300"></textarea>
+                        <button type="submit" class="btn btn-primary btn-lg w-full">
+                            Envoyer le message
+                            <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-indigo-400">
+                        <i class="fas fa-car mr-2"></i>Veyra
+                    </h3>
+                    <p class="text-gray-400">
+                        La plateforme de référence pour la location de véhicules au Niger.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Location courte durée</a></li>
+                        <li><a href="#" class="hover:text-white">Location longue durée</a></li>
+                        <li><a href="#" class="hover:text-white">Véhicules de luxe</a></li>
+                        <li><a href="#" class="hover:text-white">Transport événementiel</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Centre d'aide</a></li>
+                        <li><a href="#" class="hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="hover:text-white">Conditions générales</a></li>
+                        <li><a href="#" class="hover:text-white">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+                    <p class="text-gray-400 mb-4">Recevez nos offres spéciales et actualités.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Votre email"
+                            class="input input-bordered flex-1 bg-gray-800 text-white border-gray-700">
+                        <button class="btn btn-primary ml-2">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Veyra. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script pour animations et interactions -->
+    <script>
+        // Auto-fermeture après 5 secondes
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+        // Animation smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animation compteurs
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stats-counter');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const target = parseInt(counter.textContent.replace(/\D/g, ''));
+                        let current = 0;
+                        const increment = target / 50;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                counter.textContent = counter.textContent.replace(/\d+/, target);
+                                clearInterval(timer);
+                            } else {
+                                counter.textContent = counter.textContent.replace(/\d+/, Math.floor(current));
+                            }
+                        }, 30);
+                        observer.unobserve(counter);
+                    }
+                });
+            });
+
+            counters.forEach(counter => observer.observe(counter));
+        }
+
+        // Initialiser les animations au chargement
+        document.addEventListener('DOMContentLoaded', function () {
+            animateCounters();
+        });
+
+        // Effet parallax léger sur le hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero-gradient');
+            if (parallax) {
+                const speed = scrolled * 0.2;
+                parallax.style.transform = `translateY(${speed}px)`;
+            }
+        });
+    </script>
+</body>
+
+</html>

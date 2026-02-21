@@ -1,0 +1,19 @@
+
+{% extends 'base.html' %}
+
+    {% block content %}
+    <form method="POST" class="space-y-4 flex flex-col">
+        <span class="text-center">
+            Etes-vous sûr de vouloir supprimer cet paiement  
+            <strong>{{paiements.reservation}}</strong> ?
+        </span>
+        {% csrf_token %}
+
+        <div class="flex justify-center space-x-6">
+            <a href="{% url 'liste_paiements' %}" class="btn btn-active btn-accent w-40 text-center">Annuler</a>
+            <button type="submit" class="btn btn-error w-40">Confirmer</button>
+        </div>
+
+    </form>
+
+    {% endblock %}

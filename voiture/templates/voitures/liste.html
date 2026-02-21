@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Voitures - Veyra{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li><a href="" class="text-indigo-600 hover:text-indigo-800">
+                <i class="fas fa-home mr-1"></i>
+                Dashboard
+            </a></li>
+            <li class="text-gray-600">Gestion des voitures</li>
+        </ul>
+    </div>
+
+    <!-- En-tête -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="mb-6 lg:mb-0">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestion des Voitures</h1>
+            <p class="text-gray-600">Gérez toutes les voitures de la plateforme</p>
+        </div>
+        <div>
+            <a href="{% url 'ajouter_voitures' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-car mr-2"></i>
+                Nouvelle Voiture
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-xl shadow-lg p-4">
+        <form method="get" class="flex flex-col lg:flex-row gap-4 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Rechercher par marque, modèle ou immatriculation..." 
+                           value="{{ search }}"
+                           class="input input-bordered w-full pl-10">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            
+            <div class="lg:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filtrer par disponibilité</label>
+                <select name="disponibilite" class="select select-bordered w-full">
+                    <option value="" {% if not disponibilite %}selected{% endif %}>Toutes les voitures</option>
+                    <option value="1" {% if disponibilite == "1" %}selected{% endif %}>Disponible</option>
+                    <option value="0" {% if disponibilite == "0" %}selected{% endif %}>Indisponible</option>
+                </select>
+            </div>
+            
+            <div class="lg:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filtrer par transmission</label>
+                <select name="transmission" class="select select-bordered w-full">
+                    <option value="" {% if not transmission %}selected{% endif %}>Toutes les transmissions</option>
+                    <option value="manuelle" {% if transmission == "manuelle" %}selected{% endif %}>Manuelle</option>
+                    <option value="automatique" {% if transmission == "automatique" %}selected{% endif %}>Automatique</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filtrer
+                </button>
+                <a href="{% url 'liste_voitures' %}" class="btn btn-outline">
+                    <i class="fas fa-times mr-2"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des voitures -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        {% if voitures %}
+        <div class="hidden lg:block">
+            <table class="table w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left font-semibold text-gray-700 py-4">#</th>
+                        <th class="text-left font-semibold text-gray-700">Voiture</th>
+                        <th class="text-left font-semibold text-gray-700">Propriétaire</th>
+                        <th class="text-left font-semibold text-gray-700">Détails</th>
+                        <th class="text-left font-semibold text-gray-700">Prix/Jour</th>
+                        <th class="text-left font-semibold text-gray-700">Statut</th>
+                        <th class="text-left font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in voitures %}
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="py-4 font-medium text-gray-900">{{ forloop.counter }}</td>
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="w-16 h-12 bg-gray-200 rounded-lg mr-3 overflow-hidden">
+                                    {% if v.photo %}
+                                    <img src="{{ v.photo.url }}" alt="Photo voiture"
+                                         class="w-full h-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-car text-gray-400"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ v.marque }} {{ v.modele }}</div>
+                                    <div class="text-sm text-gray-500">{{ v.annee }} • {{ v.couleur }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-900">{{ v.proprietaire.nom }} {{ v.proprietaire.prenom }}</div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-sm">
+                                <div class="text-gray-900">{{ v.immatriculation }}</div>
+                                <div class="text-gray-500">
+                                    <i class="fas fa-cog mr-1"></i>{{ v.transmission|title }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-users mr-1"></i>{{ v.nb_places }} places
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="font-semibold text-lg text-indigo-600">
+                                {{ v.prix_jour|floatformat:0 }} FCFA
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            {% if v.disponibilite %}
+                            <span class="badge badge-success">
+                                <i class="fas fa-check mr-1"></i>
+                                Disponible
+                            </span>
+                            {% else %}
+                            <span class="badge badge-error">
+                                <i class="fas fa-times mr-1"></i>
+                                Indisponible
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'modifier_voitures' v.id %}" 
+                                   class="btn btn-sm btn-outline btn-primary">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Modifier
+                                </a>
+                                <a href="{% url 'supprimer_voitures' v.id %}"                                       
+                                    class="btn btn-sm btn-outline btn-error">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if voitures.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex justify-center">
+                <div class="btn-group">
+                    {% if voitures.has_previous %}
+                    <a href="?page={{ voitures.previous_page_number }}&search={{ search }}&disponibilite={{ disponibilite }}&transmission={{ transmission }}" 
+                       class="btn btn-outline">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% endif %}
+
+                    {% for num in voitures.paginator.page_range %}
+                    {% if num == voitures.number %}
+                    <a href="?page={{ num }}&search={{ search }}&disponibilite={{ disponibilite }}&transmission={{ transmission }}" 
+                       class="btn btn-primary">{{ num }}</a>
+                    {% elif num > voitures.number|add:'-3' and num < voitures.number|add:'3' %}
+                    <a href="?page={{ num }}&search={{ search }}&disponibilite={{ disponibilite }}&transmission={{ transmission }}" 
+                       class="btn btn-outline">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if voitures.has_next %}
+                    <a href="?page={{ voitures.next_page_number }}&search={{ search }}&disponibilite={{ disponibilite }}&transmission={{ transmission }}" 
+                       class="btn btn-outline">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- État vide -->
+        <div class="p-12 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-car text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucune voiture trouvée</h3>
+            <p class="text-gray-600 mb-8">
+                {% if search or disponibilite or transmission %}
+                Aucune voiture ne correspond à vos critères de recherche.
+                {% else %}
+                Il n'y a pas encore de voitures dans le système.
+                {% endif %}
+            </p>
+            {% if search or disponibilite or transmission %}
+            <a href="{% url 'liste_voitures' %}" class="btn btn-outline mr-4">
+                <i class="fas fa-times mr-2"></i>
+                Effacer les filtres
+            </a>
+            {% endif %}
+            <a href="{% url 'ajouter_voitures' %}" class="btn btn-primary">
+                <i class="fas fa-car mr-2"></i>
+                Ajouter une voiture
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

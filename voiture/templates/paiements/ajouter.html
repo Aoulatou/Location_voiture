@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="card-title text-2xl mb-6">Ajout d'un Paiement</h2>
+
+            <a href="{% url 'liste_paiements' %}" class="btn btn-error">
+                Annuler
+            </a>
+        </div>
+
+        <form method="POST" action="{% url 'ajouter_paiements' %}" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Réservation *</span>
+                    </label>
+                    <select name="reservation" class="select select-bordered" required>
+                        <option value="">Sélectionner une réservation </option>
+                        {% for r in reservations %}
+                        <option value="{{ r.id }}">
+                            {{ r.utilisateur.nom }} {{ r.utilisateur.prenom }} - {{ r.voiture.marque }} 
+                            {{ r.voiture.modele }} ({{ r.montant }} FCFA)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Moyen de paiement *</span>
+                    </label>
+                    <select name="moyenPaiement" class="select select-bordered" required>
+                        <option value="Carte">Carte bancaire</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="MobileMoney">Mobile Money</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Date de paiement *</span>
+                    </label>
+                    <input type="date" name="datePaiement" class="input input-bordered" required>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Statut de paiement *</span>
+                    </label>
+                    <select name="statutP" class="select select-bordered" required>
+                        <option value="effectue">Effectué</option>
+                        <option value="echoue">Échoué</option>
+                        <option value="rembourse">Remboursé</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card-actions justify-end space-x-4">
+                <button type="reset" class="btn btn-neutral">
+                    Réinitialiser
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Ajouter la réservation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

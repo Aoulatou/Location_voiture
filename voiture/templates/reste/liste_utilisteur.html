@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Utilisateurs{% endblock %}
+
+{% block content %}
+
+<div>
+    <div class="text-sm breadcrumbs mb-6">
+        <ul>
+            <li><a href="#dashboard">Accueil</a></li>
+            <li>Gestion des utilisateurs</li>
+        </ul>
+    </div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h1 class="text-3xl font-bold mb-4 sm:mb-0">Gestion des Utilisateurs</h1>
+
+        <a href="{% url 'ajouter_utilisateurs' %}" class="btn btn-primary">
+            Nouvel Utilisateur
+        </a>
+    </div>
+
+    <div x-show="currentView === 'liste'" x-transition>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <form method="get" class="flex items-center w-full gap-4  md:w-1/2">
+                        <input type="text" name="search" placeholder="Rechercher par nom ou email" value="{{ search }}"
+                            class="input input-bordered w-full" />
+
+                        <select name="role" class="select select-bordered">
+                            <option value="" {% if not role %}selected{% endif %}>Tous les rôles</option>
+                            <option value="client" {% if role == "client" %}selected{% endif %}>Client</option>
+                            <option value="proprietaire" {% if role == "proprietaire" %}selected{% endif %}>Propriétaire
+                            </option>
+                            <option value="veyra" {% if role == "veyra" %}selected{% endif %}>Veyra</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </form>
+
+                </div>
+
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom Complet</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Adresse</th>
+                                <th>Rôle</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in utilisateurs %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ u.nom }} {{ u.prenom }}</td>
+                                <td>{{ u.email }}</td>
+                                <td>{{ u.telephone }}</td>
+                                <td>{{ u.adresse }}</td>
+                                <td>
+                                    {% if u.role == 'client' %}
+                                    <span class="badge badge-primary">Client</span>
+                                    {% elif u.role == 'proprietaire' %}
+                                    <span class="badge badge-success">Propriétaire</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">Veyra</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'modifier_utilisateurs' u.id %}" class="btn btn-sm btn-ghost">
+                                        Modifier
+                                    </a>
+                                    <a href="{% url 'supprimer_utilisateurs' u.id %}"
+                                        class="btn btn-sm btn-ghost text-error">
+                                        Supprimer</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7">Aucun utilisateur trouvé.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-6">
+                    <div class="btn-group">
+                        {% if utilisateurs.has_previous %}
+                            <a href="?page={{ utilisateurs.previous_page_number }}&q={{ q }}&role={{ role }}"
+                                class="btn">«</a>
+                        {% endif %}
+
+                        {% for num in utilisateurs.paginator.page_range %}
+                            {% if num == utilisateurs.number %}
+                                <a href="?page={{ num }}&q={{ q }}&role={{ role }}" class="btn btn-active">{{ num }}</a>
+                            {% else %}
+                                <a href="?page={{ num }}&q={{ q }}&role={{ role }}" class="btn">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if utilisateurs.has_next %}
+                            <a href="?page={{ utilisateurs.next_page_number }}&q={{ q }}&role={{ role }}" class="btn">»</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

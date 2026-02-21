@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Veyra - Location de véhicules{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .footer-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar header-fixed header-gradient text-white p-6 shadow-lg">
+        <div class="navbar-start">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-car text-2xl text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar-center">
+            <h1 class="text-2xl lg:text-3xl font-bold text-white">
+                Veyra : Plateforme de location des véhicules
+            </h1>
+        </div>
+
+        <div class="navbar-end">
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                    <div class="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                </label>
+                <ul tabindex="0"
+                    class="menu menu-compact dropdown-content mt-3 p-2 shadow-lg bg-white rounded-box w-52 border">
+                    <li class="menu-title">
+                        <span class="text-gray-700">Bonjour, {{ user.nom }} {{ user.prenom }}</span>
+                    </li>
+                    <li><a href="{% url 'profil' %}" class="text-gray-700"><i class="fas fa-user mr-2"></i>Mon
+                            profil</a>
+                    </li>
+                    <li><a href="#" class="text-gray-700"><i class="fas fa-cog mr-2"></i>
+                        Paramètres</a>
+                    </li>
+                    <li class="border-t mt-2 pt-2">
+                        <a href="{% url 'deconnexion' %}" class="text-red-600 hover:bg-red-50">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages flash -->
+    {% if messages %}
+    <div class="p-6 space-y-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-lg rounded-xl border-0">
+            <div>
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle text-lg"></i>
+                {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle text-lg"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle text-lg"></i>
+                {% else %}
+                <i class="fas fa-info-circle text-lg"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="min-h-screen bg-gray-50 py-8">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <!-- En-tête du profil -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                    <div
+                        class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                        <!-- Avatar -->
+                        <div class="relative">
+                            <div
+                                class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                                {{ user.nom.0 }}{{ user.prenom.0 }}
+                            </div>
+                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
+                                title="Email vérifié">
+                                <i class="fas fa-check text-white text-sm"></i>
+                            </div>
+                        </div>
+
+                        <!-- Informations principales -->
+                        <div class="flex-1 text-center md:text-left">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                                {{ user.nom }} {{ user.prenom }}
+                            </h1>
+                            <p class="text-gray-600 mb-2">
+                                {{ user.email }}
+                                <i class="fas fa-check-circle text-green-600 ml-1" title="Email vérifié"></i>
+                            </p>
+                            <span class="badge badge-primary">{{ user.role|title }}</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col space-y-2">
+                            <button class="btn btn-primary"
+                                onclick="document.getElementById('modal-edit-profile').checked = true">
+                                <i class="fas fa-edit mr-2"></i>
+                                Modifier le profil
+                            </button>
+                            <button class="btn btn-outline"
+                                onclick="document.getElementById('modal-change-password').checked = true">
+                                <i class="fas fa-key mr-2"></i>
+                                Mot de passe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-car text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ total_reservations|default:0 }}</h3>
+                        <p class="text-gray-600">Réservations totales</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ reservations_actives|default:0 }}</h3>
+                        <p class="text-gray-600">Réservations actives</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-coins text-purple-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ total_depense|floatformat:0|default:0 }}</h3>
+                        <p class="text-gray-600">FCFA dépensés</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Informations personnelles -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Détails du compte -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <div class="border-l-4 border-indigo-500 pl-4 mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">Informations personnelles</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Prénom</label>
+                                    <p class="text-gray-900 mt-1">{{ user.prenom|default:"Non renseigné" }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Nom</label>
+                                    <p class="text-gray-900 mt-1">{{ user.nom|default:"Non renseigné" }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Email</label>
+                                    <p class="text-gray-900 mt-1">{{ user.email }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Téléphone</label>
+                                    <p class="text-gray-900 mt-1">{{ user.telephone|default:"Non renseigné" }}</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-sm font-medium text-gray-700">Adresse</label>
+                                    <p class="text-gray-900 mt-1">{{ user.adresse|default:"Non renseignée" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Réservations récentes -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h2 class="text-xl font-semibold text-gray-900">Réservations récentes</h2>
+                                </div>
+                                <a href="{% url 'mes_reservations' %}"
+                                    class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                                    Voir toutes
+                                    <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            </div>
+
+                            {% if reservations_recentes %}
+                            <div class="space-y-4">
+                                {% for reservation in reservations_recentes %}
+                                <div
+                                    class="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:shadow-md transition">
+                                    <div class="flex items-center space-x-4">
+                                        <div
+                                            class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-car text-indigo-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">
+                                                {{ reservation.voiture.marque }} {{ reservation.voiture.modele }}
+                                            </h4>
+                                            <p class="text-gray-600 text-sm">
+                                                <i class="far fa-calendar mr-1"></i>
+                                                {{ reservation.dateDebut|date:"d/m/Y" }} - {{
+                                                reservation.dateFin|date:"d/m/Y" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        {% if reservation.statutR == 'CONFIRMEE' %}
+                                        <span class="badge badge-success">Confirmée</span>
+                                        {% elif reservation.statutR == 'EN_ATTENTE' %}
+                                        <span class="badge badge-warning">En attente</span>
+                                        {% else %}
+                                        <span class="badge badge-error">Annulée</span>
+                                        {% endif %}
+                                        <p class="text-gray-900 font-semibold text-sm mt-1">
+                                            {{ reservation.montant|floatformat:0 }} FCFA
+                                        </p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-12">
+                                <div
+                                    class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-600 mb-4">Aucune réservation pour le moment</p>
+                                <a href="{% url 'Veyra' %}" class="btn btn-primary">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Explorer les véhicules
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Actions rapides -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+                            <div class="space-y-3">
+                                <a href="{% url 'Veyra' %}" class="btn btn-primary w-full justify-start">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Nouvelle réservation
+                                </a>
+                                <a href="{% url 'mes_reservations' %}" class="btn btn-outline w-full justify-start">
+                                    <i class="fas fa-list mr-2"></i>
+                                    Mes réservations
+                                </a>
+                                <a href="#" class="btn btn-outline w-full justify-start">
+                                    <i class="fas fa-headset mr-2"></i>
+                                    Support client
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Sécurité du compte -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Sécurité du compte</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-envelope text-indigo-600 mr-3"></i>
+                                            <span class="text-sm font-medium">Email</span>
+                                        </div>
+                                        <span class="badge badge-success badge-sm">Vérifié</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 ml-9">
+                                        Votre email a été vérifié lors de l'inscription
+                                    </p>
+                                </div>
+
+                                <button onclick="document.getElementById('modal-change-password').checked = true"
+                                    class="btn btn-outline btn-sm w-full justify-start">
+                                    <i class="fas fa-key mr-2"></i>
+                                    Changer le mot de passe
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Préférences -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Notifications</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-700">Emails</span>
+                                    <input type="checkbox" class="toggle toggle-primary toggle-sm" checked>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-700">SMS</span>
+                                    <input type="checkbox" class="toggle toggle-primary toggle-sm">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-700">Promotions</span>
+                                    <input type="checkbox" class="toggle toggle-primary toggle-sm" checked>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de modification du profil -->
+    <input type="checkbox" id="modal-edit-profile" class="modal-toggle" />
+    <div class="modal">
+        <div class="modal-box max-w-2xl">
+            <h3 class="font-bold text-lg mb-6">Modifier mon profil</h3>
+
+            <form method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                        <input type="text" name="prenom" value="{{ user.prenom }}" class="input input-bordered w-full"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                        <input type="text" name="nom" value="{{ user.nom }}" class="input input-bordered w-full"
+                            required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                    <input type="tel" name="telephone" value="{{ user.telephone }}" class="input input-bordered w-full">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                    <textarea name="adresse"
+                        class="textarea textarea-bordered w-full h-24">{{ user.adresse }}</textarea>
+                </div>
+
+                <div class="modal-action">
+                    <label for="modal-edit-profile" class="btn btn-outline">Annuler</label>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de changement de mot de passe -->
+    <input type="checkbox" id="modal-change-password" class="modal-toggle" />
+    <div class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-6">Changer le mot de passe</h3>
+
+            <form method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe actuel</label>
+                    <input type="password" name="old_password" class="input input-bordered w-full" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nouveau mot de passe</label>
+                    <input type="password" name="new_password1" class="input input-bordered w-full" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le nouveau mot de
+                        passe</label>
+                    <input type="password" name="new_password2" class="input input-bordered w-full" required>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="text-xs">Le mot de passe doit contenir au moins 8 caractères</span>
+                </div>
+
+                <div class="modal-action">
+                    <label for="modal-change-password" class="btn btn-outline">Annuler</label>
+                    <button type="submit" class="btn btn-primary">Changer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer-gradient text-white p-6 shadow-lg border-t">
+        <div class="container mx-auto">
+            <div class="text-center">
+                <div class="mb-4">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-car text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">Veyra</span>
+                    </div>
+                    <p class="text-white/80 mb-4">© 2025 Veyra. Tous droits réservés.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-6 text-sm">
+                    <a href="#" class="text-white/80 hover:text-white transition-colors">À propos</a>
+                    <a href="#" class="text-white/80 hover:text-white transition-colors">Contact</a>
+                    <a href="#" class="text-white/80 hover:text-white transition-colors">Conditions d'utilisation</a>
+                    <a href="#" class="text-white/80 hover:text-white transition-colors">Politique de
+                        confidentialité</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Auto-fermeture après 5 secondes
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

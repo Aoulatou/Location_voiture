@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des voitures{% endblock %}
+
+{% block content %}
+
+<div>
+    <div class="text-sm breadcrumbs mb-6">
+        <ul>
+            <li><a href="#dashboard">Accueil</a></li>
+            <li>Gestion des Voitures</li>
+        </ul>
+    </div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h1 class="text-3xl font-bold mb-4 sm:mb-0">Gestion des Voitures</h1>
+
+        <a href="{% url 'ajouter_voitures' %}" class="btn btn-primary">
+            Nouvelle voiture
+        </a>
+    </div>
+
+    <div x-show="currentView === 'liste'" x-transition>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <form method="get" class="flex items-center w-full gap-4  md:w-1/2">
+                        <input type="text" name="search" placeholder="Recherches..." value="{{ search }}"
+                            class="input input-bordered w-full" />
+
+                        <select name="role" class="select select-bordered">
+                            <option value="">Toutes les disponibilitées</option>
+                            <option value="1">Disponible</option>
+                            <option value="0">Indisponible</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </form>
+
+                </div>
+
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Propriétaire</th>
+                                <th>Marque</th>
+                                <th>Modèle</th>
+                                <th>Année</th>
+                                <th>Couleur</th>
+                                <th>Immatriculation</th>
+                                <th>Transmission</th>
+                                <th>Prix par Jour</th>
+                                <th>Disponibilité</th>
+                                <th>Photo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in voitures %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ v.proprietaire.nom }} {{ v.proprietaire.prenom }}</td>
+                                <td>{{ v.marque }}</td>
+                                <td>{{ v.modele }}</td>
+                                <td>{{ v.annee }}</td>
+                                <td>{{ v.couleur }}</td>
+                                <td>{{ v.immatriculation }}</td>
+                                <td>{{ v.transmission }}</td>
+                                <td>{{ v.nb_places }}</td>
+                                <td>{{ v.prix_jour }} FCFA</td>
+                                <td>
+                                    {% if v.disponibilite %}
+                                    <span class="badge badge-warning">Disponible</span>
+                                    {% else %}
+                                    <span class="badge badge-error">Indisponible</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if v.photo %}
+                                        <img src="{{ v.photo.url }}" alt="Photo voiture"
+                                            class="w-24 h-16 object-cover rounded">
+                                    {% else %}
+                                        <span>Aucune photo</span>
+                                        {% endif %}
+                                </td>
+
+                                <td>
+                                    <a href="{% url 'modifier_voitures' v.id %}" class="btn btn-sm btn-ghost">
+                                        Modifier
+                                    </a>
+                                    <a href="{% url 'supprimer_voitures' v.id %}"
+                                        class="btn btn-sm btn-ghost text-error">
+                                        Supprimer</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10">Aucune voiture trouvée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-6">
+                    <div class="btn-group">
+                        {% if voitures.has_previous %}
+                        <a href="?page={{ voitures.previous_page_number }}&q={{ search }}&role={{ role }}"
+                            class="btn">«</a>
+                        {% endif %}
+
+                        {% for num in voitures.paginator.page_range %}
+                        {% if num == voitures.number %}
+                        <a href="?page={{ num }}&q={{ search }}&role={{ role }}" class="btn btn-active">{{ num }}</a>
+                        {% else %}
+                        <a href="?page={{ num }}&q={{ search }}&role={{ role }}" class="btn">{{ num }}</a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if voitures.has_next %}
+                        <a href="?page={{ voitures.next_page_number }}&q={{ search }}&role={{ role }}" class="btn">»</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

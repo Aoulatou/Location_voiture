@@ -1,0 +1,32 @@
+
+{% extends 'base.html' %}
+
+    {% block content %}
+    <form method="POST" class="space-y-4 flex flex-col">
+        <!-- <span class="text-center">
+            Etes-vous sûr de vouloir supprimer cette réservation  
+            <strong>{{reservation.utilisateur}}  {{reservation.voiture}}</strong>
+        </span> -->
+        <span class="text-center">
+            <h3 class="font-bold text-lg text-error mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Confirmer la suppression
+        </h3>
+        <p class="mb-4">
+            Êtes-vous sûr de vouloir supprimer la réservation numero 
+            <span class="font-semibold">{{reservation.numero}}</span> ?
+        </p>
+        <p class="text-sm text-gray-600 mb-6">
+            Cette action est irréversible et supprimera toutes les données associées.
+        </p>
+        </span>
+        {% csrf_token %}
+
+        <div class="flex justify-center space-x-6">
+            <a href="{% url 'liste_reservations' %}" class="btn btn-active btn-accent w-40 text-center">Annuler</a>
+            <button type="submit" class="btn btn-error w-40">Confirmer</button>
+        </div>
+
+    </form>
+
+    {% endblock %}

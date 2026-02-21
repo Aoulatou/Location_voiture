@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Veyra - Location de véhicules{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .nav-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .footer-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+    <div class="flex flex-grow">
+        <div class="flex flex-col flex-grow">
+            {% include 'partials/header.html' %}
+            
+            <div class="flex flex-grow">
+                <!-- Sidebar -->
+                <aside class="sidebar-fixed sidebar-gradient shadow-lg border-r border-gray-200">
+                    <div class="flex flex-col h-full">
+                        <!-- Menu Title -->
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-th-large mr-3 text-indigo-600"></i>
+                                Menu Principal
+                            </h2>
+                        </div>
+
+                        <!-- Navigation -->
+                        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                            <!-- Dashboard -->
+                            <a href="/dashboard" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/dashboard/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-tachometer-alt mr-4 text-lg"></i>
+                                Tableau de bord
+                            </a>
+
+                            <!-- Utilisateurs -->
+                            <a href="/utilisateurs" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/utilisateurs/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-users mr-4 text-lg"></i>
+                                Utilisateurs 
+                            </a>
+
+                            <!-- Véhicules -->
+                            <a href="/voitures" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/voitures/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-car mr-4 text-lg"></i>
+                                Véhicules 
+                            </a>
+
+                            <!-- Réservations -->
+                            <a href="/reservations" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/reservations/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-calendar-check mr-4 text-lg"></i>
+                                Réservations 
+                            </a>
+
+                            <!-- Paiements -->
+                            <a href="/paiements" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/paiements/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-credit-card mr-4 text-lg"></i>
+                                Paiements
+                            </a>
+
+                            <a href="/avis" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 {% if request.path == '/avis/' %}active{% else %}text-gray-700 hover:text-white{% endif %}">
+                                <i class="fas fa-star w-5 h-5 mr-3"></i>
+                                Avis & Commentaires
+                            </a>
+
+                            <!-- Rapports -->
+                            <a href="#" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm">
+                                <i class="fas fa-chart-line mr-4 text-lg"></i>
+                                Rapports
+                            </a>
+
+                            <!-- Divider -->
+                            <div class="border-t border-gray-300 my-6"></div>
+
+                            <!-- Retour au site -->
+                            <a href="/Veyra" class="nav-item flex items-center px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-gray-700 hover:text-white" >
+                                <i class="fas fa-external-link-alt mr-4 text-lg"></i>
+                                Voir le site
+                            </a>
+                        </nav>
+    
+                    </div>
+                </aside>
+
+                <main class="flex-1 overflow-auto">
+                    <!-- Messages flash -->
+                    {% if messages %}
+                    <div class="p-6 space-y-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} shadow-lg rounded-xl border-0">
+                            <div>
+                                {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle text-lg"></i>
+                                {% elif message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle text-lg"></i>
+                                {% elif message.tags == 'warning' %}
+                                <i class="fas fa-exclamation-triangle text-lg"></i>
+                                {% else %}
+                                <i class="fas fa-info-circle text-lg"></i>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="p-6">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </main>
+            </div>
+
+            {% include 'partials/footer.html' %}
+        </div>
+    </div>
+    <script>
+        // Auto-fermeture après 5 secondes
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+
+</html>

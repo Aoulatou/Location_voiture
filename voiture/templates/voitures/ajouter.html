@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="card-title text-2xl mb-6">Ajout d'une Voiture</h2>
+            
+            <a href="{% url 'liste_voitures' %}" class="btn btn-error">
+                Annuler
+            </a>
+        </div>
+
+        <form method="POST" action="{% url 'ajouter_voitures' %}" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Propriétaire *</span>
+                    </label>
+                    <select name="proprietaire" class="select select-bordered" required>
+                        <option value="">Sélectionner un propriétaire</option>
+                        {% for u in utilisateurs %}
+                        <option value="{{ u.id }}">
+                            {{ u.nom }} {{ u.prenom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Marque *</span>
+                    </label>
+                    <input type="text" name="marque" class="input input-bordered" placeholder="Marque" required>
+                </div>
+                
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Modèle *</span>
+                    </label>
+                    <input type="text" name="modele" placeholder="Modèle" class="input input-bordered" required>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Année *</span>
+                    </label>
+                    <input type="number" name="annee" min="1900" max="2100" class="input input-bordered" required>
+                </div>   
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Immatriculation *</span>
+                    </label>
+                    <input type="text" name="immatriculation" class="input input-bordered" placeholder="AQ 0308"
+                        required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Prix (FCFA) *</span>
+                    </label>
+                    <input type="number" step="0.01" name="prix_jour" class="input input-bordered" placeholder="Prix"
+                        required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Nombre de places *</span>
+                    </label>
+                    <input type="number" name="nb_places" class="input input-bordered" placeholder=" Nombre de places"
+                        required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Description *</span>
+                    </label>
+                    <textarea name="description" class="textarea textarea-bordered h-12" required></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="label">Disponibilité</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" 
+                                name="disponibilite" 
+                                value="True"
+                                class="radio radio-primary" 
+                                {% if voiture.disponibilite %}checked{% endif %}>
+                            <span>Disponible</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" 
+                                name="disponibilite" 
+                                value="False"
+                                class="radio radio-primary" 
+                                {% if not voiture.disponibilite %}checked{% endif %}>
+                            <span>Indisponible</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Transmission *</span>
+                    </label>
+                    <select name="transmission" class="select select-bordered" required>
+                        <option value="">Sélectionner une transmission</option>
+                        <option value="manuelle">Manuelle</option>
+                        <option value="automatique">Automatique</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Couleur *</span>
+                        </label>
+                        <input type="text" name="couleur" class="input input-bordered" placeholder="Couleur" required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Photo </span>
+                    </label>
+                    <input type="file" name="photo" class="file-input file-input-bordered" accept="image/*" >
+                </div>
+            </div>
+
+            <div class="card-actions justify-end space-x-4">
+                <button type="reset" class="btn btn-neutral">
+                    <i class="fas fa-undo"></i>
+                    Réinitialiser
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Ajouter la voiture
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
